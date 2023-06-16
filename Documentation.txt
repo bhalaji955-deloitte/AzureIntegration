@@ -1,0 +1,45 @@
+Main Objective :
+Perform Crud Operation on Azure Blob Storage with Mulesoft with Azure Blob Connector.
+
+Endpoints:
+POST /api/blob/upload
+GET /api/blob/download/{fileName}
+PUT /api/blob/update/{fileName}
+DELETE /api/blob/delete/{fileName}
+
+
+Implementation Details:
+ 
+POST:
+Configured the MuleSoft flow to receive a POST request at the specified endpoint.
+Implemented the necessary logic to extract the file from the request payload.
+Utilized the Azure Blob Storage Connector within the flow to establish a connection with Azure Blob Storage.
+Used the connector's functionality to upload the file to the specified container and with the provided file name.
+
+GET:
+Set up the MuleSoft flow to handle GET requests at the designated endpoint.
+Extracted the {fileName} parameter from the request URL to determine the file to be downloaded.
+Established a connection to Azure Blob Storage using the Azure Blob Storage Connector.
+Utilized the connector's capabilities to retrieve the specified file from Azure Blob Storage.
+Configured the flow to return the file as a response, ensuring appropriate content type and headers are set.
+
+PUT:
+Designed the MuleSoft flow to handle PUT requests at the specified endpoint.
+Extracted the {fileName} parameter from the request URL to identify the file to be updated.
+Extracted the updated file content from the request payload.
+Established a connection to Azure Blob Storage using the Azure Blob Storage Connector.
+Utilized the connector's functionality to update the specified file in Azure Blob Storage with the provided content.
+
+DElETE:
+Configured the MuleSoft flow to handle DELETE requests at the specified endpoint.
+Extracted the {fileName} parameter from the request URL to determine the file to be deleted.
+Established a connection to Azure Blob Storage using the Azure Blob Storage Connector.
+Utilized the connector's capabilities to delete the specified file from Azure Blob Storage.
+
+Dependencys Used:
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>azure-storage-connector</artifactId>
+			<version>2.1.0</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
