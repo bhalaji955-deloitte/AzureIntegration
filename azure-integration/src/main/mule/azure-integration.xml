@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:azure-storage="http://www.mulesoft.org/schema/mule/azure-storage" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/azure-storage http://www.mulesoft.org/schema/mule/azure-storage/current/mule-azure-storage.xsd">
+    <apikit:config name="azure-integration-config" api="azure-integration.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <azure-storage:config name="Azure_Storage_Config" doc:name="Azure Storage Config" doc:id="098225f5-2314-44e0-bab4-41db31319cfb" >
+		<azure-storage:access-key-azure-connection accountName="mulesoftintegration" accountKey="DefaultEndpointsProtocol=https;AccountName=mulesoftintegration;AccountKey=thlkBLCHdZ9yxy3SbPru+LuB+xpEC297227aXkWGYM4xkzU0BbKTcW+fMXMJnm6FF9WmA2b0U7fI+AStVj4JJQ==;EndpointSuffix=core.windows.net" />
+	</azure-storage:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="bf5102a7-5699-4afd-98db-8bd7146ecfdb" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="azure-integration-main">
+        <http:listener config-ref="HTTP_Listener_config" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="azure-integration-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="azure-integration-console">
+        <http:listener config-ref="HTTP_Listener_config" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="azure-integration-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\blob\update\(fileName):application\json:azure-integration-config">
+		<azure-storage:upload-blob doc:name="Upload blob" doc:id="8b697164-46c8-40f2-81a8-53ef4e72a8f9" config-ref="Azure_Storage_Config">
+			<azure-storage:storblob container='#["sample"]' fileName="#[attributes.uriParams.fileName]" fileStream="#[payload]" />
+		</azure-storage:upload-blob>
+		<ee:transform doc:name="Transform Message" doc:id="b1002d01-ca0f-46bb-a259-dc79a68f2863" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" message="put:\blob\update\(fileName):application\json:azure-integration-config" />
+    </flow>
+    <flow name="delete:\blob\delete\(fileName):azure-integration-config">
+        <azure-storage:delete-blob doc:name="Delete blob" doc:id="cb1388cb-d49b-43b9-acc6-46a14d0377cd" config-ref="Azure_Storage_Config">
+			<azure-storage:blob container='#["sample"]' fileName="#[attributes.uriParams.fileName]" />
+		</azure-storage:delete-blob>
+        <ee:transform doc:name="Transform Message" doc:id="81720583-16db-42f9-ae4d-319296d2661a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" message="delete:\blob\delete\(fileName):azure-integration-config" />
+    </flow>
+    <flow name="get:\blob\download\(fileName):azure-integration-config">
+        <azure-storage:download-blob doc:name="Download blob" doc:id="7c768da1-bb1b-43e5-8ac1-64dc3ee12302" config-ref="Azure_Storage_Config">
+			<azure-storage:blob container='#["sample"]' fileName='#[attributes.uriParams.fileName]' />
+		</azure-storage:download-blob>
+        <ee:transform doc:name="Transform Message" doc:id="9f58d009-4953-4e06-8803-133b0ea9de1d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" message="get:\blob\download\(fileName):azure-integration-config" />
+    </flow>
+    <flow name="post:\blob\upload:application\json:azure-integration-config">
+		<azure-storage:upload-blob doc:name="Upload blob" doc:id="2fc1e9d4-a86b-4fe3-ab6a-c399efe006b0" config-ref="Azure_Storage_Config">
+			<azure-storage:storblob container='#["sample"]' fileName='#[payload.fileName]' fileStream="#[payload]"/>
+		</azure-storage:upload-blob>
+		<ee:transform doc:name="Transform Message" doc:id="7a2e854e-48a1-4982-8410-a55e464ca340" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" message="post:\blob\upload:application\json:azure-integration-config" />
+    </flow>
+</mule>

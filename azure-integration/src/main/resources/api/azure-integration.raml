@@ -1,0 +1,38 @@
+#%RAML 1.0
+title: azure-integration
+
+version: 1.0
+
+mediaType: 
+- application/json
+
+/blob:
+  /upload:
+    post:
+      description: Upload a file into azure blob storage
+      displayName: UPLOAD
+      body:
+      responses:
+        
+  /download:
+    /{fileName}:
+      get:
+        description: Fetch Blob data from azure Storage
+        displayName: Retrive Blob
+        responses:
+      
+  /update:
+    /{fileName}:
+      put:
+        description: Update the Blob in azure Storage
+        displayName: Update Blob
+        body:
+        responses:
+          
+  /delete:
+    /{fileName}:
+      delete:
+        description: deletes the specified blob in azure storage
+        displayName: Delete Blob
+        
+
