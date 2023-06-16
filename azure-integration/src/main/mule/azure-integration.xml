@@ -159,14 +159,14 @@ payload]]></ee:set-payload>
         <azure-storage:download-blob doc:name="Download blob" doc:id="7c768da1-bb1b-43e5-8ac1-64dc3ee12302" config-ref="Azure_Storage_Config">
 			<azure-storage:blob container='#["sample"]' fileName='#[attributes.uriParams.fileName]' />
 		</azure-storage:download-blob>
-        <ee:transform doc:name="Transform Message" doc:id="9f58d009-4953-4e06-8803-133b0ea9de1d" >
+<!-- [STUDIO:"Transform Message"]        <ee:transform doc:name="Transform Message" doc:id="9f58d009-4953-4e06-8803-133b0ea9de1d" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
----
+&#45;&#45;-
 payload]]></ee:set-payload>
 			</ee:message>
-		</ee:transform>
+		</ee:transform> [STUDIO] -->
 		<logger level="INFO" message="get:\blob\download\(fileName):azure-integration-config" />
     </flow>
     <flow name="post:\blob\upload:application\json:azure-integration-config">
